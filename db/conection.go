@@ -4,17 +4,26 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/RodrigoGonzalez78/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+var database *gorm.DB
+
 func StartDB() {
-	db, err := gorm.Open(sqlite.Open("mi_gorm_sqlite.db"), &gorm.Config{})
+
+	var err error
+
+	database, err = gorm.Open(sqlite.Open("database.db"), &gorm.Config{})
+
 	if err != nil {
 		log.Fatal("Fallo al conectar a la base de datos SQLite:", err)
 	}
-	fmt.Println("Conexión a la base de datos SQLite (GORM) establecida.")
 
-	db.AutoMigrate(&Usuario{})
-	fmt.Println("Esquema de la base de datos migrado (tabla 'users' creada/actualizada).")
+	fmt.Println("Conexión a la base de datos SQLite (GORM) establecida.")
+}
+
+func MigrateModels() {
+	database.AutoMigrate(models.User{}, models.Image{})
 }
