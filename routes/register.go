@@ -6,9 +6,11 @@ import (
 
 	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/models"
+	"github.com/RodrigoGonzalez78/utils"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
+
 	var t models.User
 
 	err := json.NewDecoder(r.Body).Decode(&t)
@@ -27,6 +29,15 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "La contaseña debe tener almenos 8 caracteres!", 400)
 		return
 	}
+
+	encrypt_password, err := utils.GenerateHashPassword(t.Password)
+
+	if err != nil {
+		http.Error(w, "Error al encriptar la contraseña!", 400)
+		return
+	}
+
+	t.Password = encrypt_password
 
 	encotrado, _ := db.IsUserNameUnique(t.UserName)
 

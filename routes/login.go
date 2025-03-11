@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/models"
+	"github.com/RodrigoGonzalez78/utils"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -20,18 +22,30 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(t.UserName) == 0 {
-		http.Error(w, "El username es requerido", 400)
+		http.Error(w, "El nombre de usuario es requerido", 400)
 		return
 	}
 
-	user, exist := bd.TriedLogin(t.Email, t.Password)
-
-	if !exist {
-		http.Error(w, "Usuario y/o contraseña invalidas", 400)
+	if len(t.Password) == 0 {
+		http.Error(w, "La contraseña es requerida", 400)
 		return
 	}
 
-	jwtKey, err := jwt_p.GeneringJwt(document)
+	user, err := db.GetUserByUserName(t.UserName)
+
+	if err != nil {
+		http.Error(w, "No se encontro el usuario", 400)
+		return
+	}
+
+	passwordValid := utils.CheckPassword(user.Password, t.Password)
+
+	if passwordValid == false {
+		http.Error(w, "Contraseña invalida", 400)
+		return
+	}
+
+	jwtKey, err := utils.GenerateJWT(t.UserName)
 
 	if err != nil {
 		http.Error(w, "Ocurrio un error"+err.Error(), 400)
@@ -39,8 +53,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := models.ResponseLogin{
-		UserId: document.ID,
-		Token:  jwtKey,
+		Token: jwtKey,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
