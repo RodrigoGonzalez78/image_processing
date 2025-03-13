@@ -41,7 +41,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	encotrado, _ := db.IsUserNameUnique(t.UserName)
 
-	if encotrado {
+	if !encotrado {
 		http.Error(w, "Ya esta registrado el nombre usuario!", 400)
 		return
 	}

@@ -40,7 +40,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	passwordValid := utils.CheckPassword(user.Password, t.Password)
 
-	if passwordValid == false {
+	if !passwordValid {
 		http.Error(w, "Contraseña invalida", 400)
 		return
 	}

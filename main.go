@@ -17,6 +17,8 @@ func main() {
 	db.MigrateModels()
 	r := mux.NewRouter()
 
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("uploads/"))))
+
 	r.HandleFunc("/register", routes.Register)
 	r.HandleFunc("/login", routes.Login)
 	r.HandleFunc("/upload", middlewares.CheckJwt(routes.Upload))
@@ -27,5 +29,5 @@ func main() {
 	}
 
 	log.Println("Servidor iniciado en el puerto: " + port)
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":"+port, r)
 }

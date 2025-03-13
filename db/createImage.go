@@ -6,18 +6,18 @@ import (
 	"github.com/RodrigoGonzalez78/models"
 )
 
-func CreateImage(name, userName string) error {
+func CreateImage(image models.Image) error {
 
-	isUnique, err := IsUserNameUnique(userName)
+	isUnique, err := IsUserNameUnique(image.UserName)
+
 	if err != nil {
 		return fmt.Errorf("error al verificar usuario: %v", err)
 	}
 
 	if isUnique {
-		return fmt.Errorf("no se puede crear la imagen: el usuario '%s' no existe", userName)
+		return fmt.Errorf("no se puede crear la imagen: el usuario '%s' no existe", image.UserName)
 	}
 
-	image := models.Image{Name: name, UserName: userName}
 	if err := database.Create(&image).Error; err != nil {
 		return fmt.Errorf("error al crear imagen: %v", err)
 	}
