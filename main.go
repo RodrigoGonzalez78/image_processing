@@ -17,11 +17,13 @@ func main() {
 	db.MigrateModels()
 	r := mux.NewRouter()
 
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("uploads/"))))
+	r.HandleFunc("/images/{rest:.*}", routes.ServeImage).Methods("GET")
 
-	r.HandleFunc("/register", routes.Register)
-	r.HandleFunc("/login", routes.Login)
-	r.HandleFunc("/upload", middlewares.CheckJwt(routes.Upload))
+	r.HandleFunc("/register", routes.Register).Methods("POST")
+	r.HandleFunc("/login", routes.Login).Methods("POST")
+	r.HandleFunc("/upload", middlewares.CheckJwt(routes.Upload)).Methods("POST")
+
+	r.HandleFunc("/user-images", middlewares.CheckJwt(routes.AllUserImages)).Methods("GET")
 
 	port := os.Getenv("PORT")
 	if port == "" {
