@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+
 	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/models"
 	"github.com/google/uuid"
