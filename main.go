@@ -25,6 +25,7 @@ func main() {
 
 	r.HandleFunc("/user-images", middlewares.CheckJwt(routes.AllUserImages)).Methods("GET")
 	r.HandleFunc("/image/{id}", middlewares.CheckJwt(routes.GetImage)).Methods("GET")
+	r.HandleFunc("/images/{id}/transform", middlewares.CheckJwt(routes.TransformImage)).Methods("POST")
 
 	port := os.Getenv("PORT")
 	if port == "" {

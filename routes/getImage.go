@@ -17,7 +17,7 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 	imageIDStr := vars["id"]
 	imageID, err := strconv.ParseInt(imageIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, "ID de imagen inválido", http.StatusBadRequest)
+		http.Error(w, "ID de imagen invalido", http.StatusBadRequest)
 		return
 	}
 
