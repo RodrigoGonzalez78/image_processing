@@ -68,9 +68,7 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 		// Se simula el efecto sepia con ajustes de saturación, contraste y hue.
 		dstImage = imaging.AdjustSaturation(dstImage, -100)
 		dstImage = imaging.AdjustContrast(dstImage, 10)
-		// Usar otra librería para el ajuste de matiz
-		// o eliminar esta transformación.
-		// dstImage = imaging.AdjustHue(dstImage, 30)
+
 	}
 
 	format := transformReq.Transformations.Format
@@ -88,7 +86,6 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 	}
 
-	// Codificar y escribir la imagen transformada directamente a la respuesta
 	if err := imaging.Encode(w, dstImage, imgFormat); err != nil {
 		http.Error(w, "Error al codificar la imagen: "+err.Error(), http.StatusInternalServerError)
 		return
