@@ -65,7 +65,7 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 		dstImage = imaging.Grayscale(dstImage)
 	}
 	if transformReq.Transformations.Filters.Sepia {
-		// Se simula el efecto sepia con ajustes de saturación, contraste y hue.
+
 		dstImage = imaging.AdjustSaturation(dstImage, -100)
 		dstImage = imaging.AdjustContrast(dstImage, 10)
 

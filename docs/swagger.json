@@ -1,0 +1,340 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Esta es una API para subir, transformar y consultar imágenes.",
+        "title": "API de Procesamiento de Imágenes",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/image/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Devuelve la metadata y URL de una imagen del usuario autenticado",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Obtener información de una imagen",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID de la imagen",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ImageDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/images/{rest}": {
+            "get": {
+                "description": "Devuelve el archivo de imagen almacenado en el servidor desde la carpeta local \"uploads\", sin exponer su ruta real.",
+                "produces": [
+                    "image/jpeg",
+                    "image/png",
+                    "image/gif"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Servir imagen",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Ruta relativa de la imagen (por ejemplo: user123/imagen.jpg)",
+                        "name": "rest",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso prohibido",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Archivo no encontrado",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Autentica al usuario y devuelve un token JWT si las credenciales son correctas.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Inicia sesión",
+                "parameters": [
+                    {
+                        "description": "Credenciales de usuario",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseLogin"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Crea un nuevo usuario en la base de datos con nombre de usuario y contraseña.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Registra un nuevo usuario",
+                "parameters": [
+                    {
+                        "description": "Datos del usuario a registrar",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Permite a un usuario autenticado subir una imagen. Se guarda en el servidor y se almacena la metadata.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Sube una imagen",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Imagen a subir (jpg, jpeg, png, gif)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.UploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Descripción del error"
+                }
+            }
+        },
+        "models.ImageDetailResponse": {
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string",
+                    "example": "jpeg"
+                },
+                "height": {
+                    "type": "integer",
+                    "example": 1080
+                },
+                "name": {
+                    "type": "string",
+                    "example": "imagen123.jpg"
+                },
+                "size": {
+                    "type": "integer",
+                    "example": 204800
+                },
+                "url": {
+                    "type": "string",
+                    "example": "http://localhost:8080/images/rodrick/imagen123.jpg"
+                },
+                "width": {
+                    "type": "integer",
+                    "example": 1920
+                }
+            }
+        },
+        "models.ResponseLogin": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UploadResponse": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "$ref": "#/definitions/models.UploadedImageDetail"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Imagen subida exitosamente"
+                }
+            }
+        },
+        "models.UploadedImageDetail": {
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string",
+                    "example": "jpeg"
+                },
+                "height": {
+                    "type": "integer",
+                    "example": 1080
+                },
+                "name": {
+                    "type": "string",
+                    "example": "imagen123.jpg"
+                },
+                "size": {
+                    "type": "integer",
+                    "example": 204800
+                },
+                "url": {
+                    "type": "string",
+                    "example": "http://localhost:8080/images/rodrick/imagen123.jpg"
+                },
+                "width": {
+                    "type": "integer",
+                    "example": 1920
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

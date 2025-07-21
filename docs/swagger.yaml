@@ -1,0 +1,229 @@
+basePath: /
+definitions:
+  models.ErrorResponse:
+    properties:
+      message:
+        example: Descripción del error
+        type: string
+    type: object
+  models.ImageDetailResponse:
+    properties:
+      format:
+        example: jpeg
+        type: string
+      height:
+        example: 1080
+        type: integer
+      name:
+        example: imagen123.jpg
+        type: string
+      size:
+        example: 204800
+        type: integer
+      url:
+        example: http://localhost:8080/images/rodrick/imagen123.jpg
+        type: string
+      width:
+        example: 1920
+        type: integer
+    type: object
+  models.ResponseLogin:
+    properties:
+      token:
+        type: string
+    type: object
+  models.UploadResponse:
+    properties:
+      image:
+        $ref: '#/definitions/models.UploadedImageDetail'
+      message:
+        example: Imagen subida exitosamente
+        type: string
+    type: object
+  models.UploadedImageDetail:
+    properties:
+      format:
+        example: jpeg
+        type: string
+      height:
+        example: 1080
+        type: integer
+      name:
+        example: imagen123.jpg
+        type: string
+      size:
+        example: 204800
+        type: integer
+      url:
+        example: http://localhost:8080/images/rodrick/imagen123.jpg
+        type: string
+      width:
+        example: 1920
+        type: integer
+    type: object
+  models.User:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Esta es una API para subir, transformar y consultar imágenes.
+  title: API de Procesamiento de Imágenes
+  version: "1.0"
+paths:
+  /image/{id}:
+    get:
+      description: Devuelve la metadata y URL de una imagen del usuario autenticado
+      parameters:
+      - description: ID de la imagen
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ImageDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obtener información de una imagen
+      tags:
+      - images
+  /images/{rest}:
+    get:
+      description: Devuelve el archivo de imagen almacenado en el servidor desde la
+        carpeta local "uploads", sin exponer su ruta real.
+      parameters:
+      - description: 'Ruta relativa de la imagen (por ejemplo: user123/imagen.jpg)'
+        in: path
+        name: rest
+        required: true
+        type: string
+      produces:
+      - image/jpeg
+      - image/png
+      - image/gif
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "403":
+          description: Acceso prohibido
+          schema:
+            type: string
+        "404":
+          description: Archivo no encontrado
+          schema:
+            type: string
+      summary: Servir imagen
+      tags:
+      - images
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica al usuario y devuelve un token JWT si las credenciales
+        son correctas.
+      parameters:
+      - description: Credenciales de usuario
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ResponseLogin'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Inicia sesión
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario en la base de datos con nombre de usuario
+        y contraseña.
+      parameters:
+      - description: Datos del usuario a registrar
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Registra un nuevo usuario
+      tags:
+      - auth
+  /upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Permite a un usuario autenticado subir una imagen. Se guarda en
+        el servidor y se almacena la metadata.
+      parameters:
+      - description: Imagen a subir (jpg, jpeg, png, gif)
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Sube una imagen
+      tags:
+      - images
+swagger: "2.0"

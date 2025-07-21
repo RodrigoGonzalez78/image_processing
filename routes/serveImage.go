@@ -6,10 +6,18 @@ import (
 	"path/filepath"
 )
 
-/*
-Utiliso ServeImage para servir imagenes desde el servidor
-sin necesidad de exponer la ruta real del archivo.
-*/
+// ServeImage godoc
+// @Summary      Servir imagen
+// @Description  Devuelve el archivo de imagen almacenado en el servidor desde la carpeta local "uploads", sin exponer su ruta real.
+// @Tags         images
+// @Produce      image/jpeg
+// @Produce      image/png
+// @Produce      image/gif
+// @Param        rest path string true "Ruta relativa de la imagen (por ejemplo: user123/imagen.jpg)"
+// @Success      200 {file} file
+// @Failure      403 {string} string "Acceso prohibido"
+// @Failure      404 {string} string "Archivo no encontrado"
+// @Router       /images/{rest} [get]
 func ServeImage(w http.ResponseWriter, r *http.Request) {
 
 	filePath := filepath.Join("uploads", r.URL.Path[len("/images/"):])

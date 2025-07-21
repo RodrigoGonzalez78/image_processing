@@ -19,6 +19,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// Upload godoc
+// @Summary      Sube una imagen
+// @Description  Permite a un usuario autenticado subir una imagen. Se guarda en el servidor y se almacena la metadata.
+// @Tags         images
+// @Security     BearerAuth
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        image formData file true "Imagen a subir (jpg, jpeg, png, gif)"
+// @Success      201 {object} models.UploadResponse
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Failure      500 {object} models.ErrorResponse
+// @Router       /upload [post]
 func Upload(w http.ResponseWriter, r *http.Request) {
 
 	file, handler, err := r.FormFile("image")
@@ -103,17 +116,19 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 
 	imageURL := fmt.Sprintf("http://localhost:8080/images/%s/%s", userData.UserName, randomName)
 
+	resp := models.UploadResponse{
+		Message: "Imagen subida exitosamente",
+		Image: models.UploadedImageDetail{
+			URL:    imageURL,
+			Name:   randomName,
+			Size:   size,
+			Format: format,
+			Width:  img.Width,
+			Height: img.Height,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Imagen subida exitosamente",
-		"image": map[string]interface{}{
-			"url":    imageURL,
-			"name":   randomName,
-			"size":   size,
-			"format": format,
-			"width":  img.Width,
-			"height": img.Height,
-		},
-	})
+	json.NewEncoder(w).Encode(resp)
 }

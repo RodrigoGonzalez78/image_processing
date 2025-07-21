@@ -9,13 +9,23 @@ import (
 	"github.com/RodrigoGonzalez78/middlewares"
 	"github.com/RodrigoGonzalez78/routes"
 	"github.com/gorilla/mux"
+
+	_ "github.com/RodrigoGonzalez78/docs" // <-- necesario
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// @title           API de Procesamiento de Imágenes
+// @version         1.0
+// @description     Esta es una API para subir, transformar y consultar imágenes.
+// @host            localhost:8080
+// @BasePath        /
 func main() {
 
 	db.StartDB()
 	db.MigrateModels()
 	r := mux.NewRouter()
+
+	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	r.HandleFunc("/images/{rest:.*}", routes.ServeImage).Methods("GET")
 

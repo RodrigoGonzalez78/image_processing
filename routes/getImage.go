@@ -11,6 +11,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// GetImage godoc
+// @Summary      Obtener información de una imagen
+// @Description  Devuelve la metadata y URL de una imagen del usuario autenticado
+// @Tags         images
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path int true "ID de la imagen"
+// @Success      200 {object} models.ImageDetailResponse
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Failure      404 {object} models.ErrorResponse
+// @Router       /image/{id} [get]
 func GetImage(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
@@ -39,13 +51,15 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 
 	imageURL := fmt.Sprintf("http://localhost:8080/images/%s/%s", userData.UserName, image.Name)
 
+	resp := models.ImageDetailResponse{
+		URL:    imageURL,
+		Name:   image.Name,
+		Size:   image.Size,
+		Format: image.Format,
+		Width:  image.Width,
+		Height: image.Height,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"url":    imageURL,
-		"name":   image.Name,
-		"size":   image.Size,
-		"format": image.Format,
-		"width":  image.Width,
-		"height": image.Height,
-	})
+	json.NewEncoder(w).Encode(resp)
 }
