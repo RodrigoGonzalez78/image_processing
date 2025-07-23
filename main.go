@@ -3,14 +3,15 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/RodrigoGonzalez78/config"
 	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/middlewares"
 	"github.com/RodrigoGonzalez78/routes"
+	"github.com/RodrigoGonzalez78/storage"
 	"github.com/gorilla/mux"
 
-	_ "github.com/RodrigoGonzalez78/docs" // <-- necesario
+	_ "github.com/RodrigoGonzalez78/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -23,6 +24,21 @@ func main() {
 
 	db.StartDB()
 	db.MigrateModels()
+	config.LoadConfig()
+
+	err := storage.StartMinioClient(
+		config.Cnf.MinioEndpoint,
+		config.Cnf.MinioAccessKey,
+		config.Cnf.MinioSecretKey,
+		config.Cnf.MinioBucket,
+		config.Cnf.MinioUseSSL,
+	)
+
+	if err != nil {
+		log.Fatal("Fallo al conectar a Minio:", err)
+
+	}
+
 	r := mux.NewRouter()
 
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
@@ -37,11 +53,6 @@ func main() {
 	r.HandleFunc("/image/{id}", middlewares.CheckJwt(routes.GetImage)).Methods("GET")
 	r.HandleFunc("/images/{id}/transform", middlewares.CheckJwt(routes.TransformImage)).Methods("POST")
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	log.Println("Servidor iniciado en el puerto: " + port)
-	http.ListenAndServe(":"+port, r)
+	log.Println("Servidor iniciado en el puerto: " + config.Cnf.Port)
+	http.ListenAndServe(":"+config.Cnf.Port, r)
 }

@@ -9,10 +9,26 @@ import (
 
 	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/models"
+	"github.com/RodrigoGonzalez78/storage"
 	"github.com/disintegration/imaging"
 	"github.com/gorilla/mux"
 )
 
+// TransformImage godoc
+// @Summary      Aplica transformaciones a una imagen
+// @Description  Aplica transformaciones (resize, crop, rotación, filtros) a una imagen previamente cargada por el usuario
+// @Tags         images
+// @Security     BearerAuth
+// @Produce      image/png
+// @Produce      image/jpeg
+// @Produce      image/gif
+// @Param        id path int true "ID de la imagen"
+// @Param        body body models.TransformationRequest true "Parámetros de transformación"
+// @Success      200 {file} file "Imagen transformada"
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      404 {object} models.ErrorResponse
+// @Failure      500 {object} models.ErrorResponse
+// @Router       /images/{id}/transform [post]
 func TransformImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	imageID := vars["id"]
@@ -23,18 +39,29 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Obtener metadata desde la base de datos
 	imageData, err := db.GetImageByID(id)
 	if err != nil {
 		http.Error(w, "Imagen no encontrada: "+err.Error(), http.StatusNotFound)
 		return
 	}
 
-	srcImage, err := imaging.Open(imageData.Path)
+	// Obtener la imagen desde MinIO
+	objReader, err := storage.MinioClientInstance.GetImage(r.Context(), imageData.Path)
 	if err != nil {
-		http.Error(w, "Error al abrir la imagen: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "No se pudo leer la imagen desde MinIO: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer objReader.Close()
+
+	// Decodificar imagen desde io.Reader
+	srcImage, _, err := image.Decode(objReader)
+	if err != nil {
+		http.Error(w, "Error al decodificar la imagen: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Decodificar el JSON del body
 	var transformReq models.TransformationRequest
 	if err := json.NewDecoder(r.Body).Decode(&transformReq); err != nil {
 		http.Error(w, "Error al parsear JSON: "+err.Error(), http.StatusBadRequest)
@@ -43,6 +70,7 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 
 	dstImage := srcImage
 
+	// Aplicar transformaciones
 	if transformReq.Transformations.Resize.Width > 0 && transformReq.Transformations.Resize.Height > 0 {
 		dstImage = imaging.Resize(dstImage, transformReq.Transformations.Resize.Width, transformReq.Transformations.Resize.Height, imaging.Lanczos)
 	}
@@ -64,16 +92,15 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 	if transformReq.Transformations.Filters.Grayscale {
 		dstImage = imaging.Grayscale(dstImage)
 	}
-	if transformReq.Transformations.Filters.Sepia {
 
+	if transformReq.Transformations.Filters.Sepia {
 		dstImage = imaging.AdjustSaturation(dstImage, -100)
 		dstImage = imaging.AdjustContrast(dstImage, 10)
-
 	}
 
+	// Elegir formato de salida
 	format := transformReq.Transformations.Format
 	var imgFormat imaging.Format
-
 	switch format {
 	case "jpg", "jpeg":
 		imgFormat = imaging.JPEG
@@ -86,9 +113,10 @@ func TransformImage(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 	}
 
+	// Codificar imagen en la respuesta
+	w.WriteHeader(http.StatusOK)
 	if err := imaging.Encode(w, dstImage, imgFormat); err != nil {
 		http.Error(w, "Error al codificar la imagen: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }

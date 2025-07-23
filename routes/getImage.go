@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RodrigoGonzalez78/config"
 	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/models"
 	"github.com/gorilla/mux"
@@ -24,32 +25,32 @@ import (
 // @Failure      404 {object} models.ErrorResponse
 // @Router       /image/{id} [get]
 func GetImage(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	imageIDStr := vars["id"]
 	imageID, err := strconv.ParseInt(imageIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, "ID de imagen invalido", http.StatusBadRequest)
+		http.Error(w, "ID de imagen inválido", http.StatusBadRequest)
 		return
 	}
 
 	userData, ok := r.Context().Value("userData").(*models.Claim)
 	if !ok || userData == nil {
-		http.Error(w, "Error al obtener los datos del usuario", http.StatusUnauthorized)
+		http.Error(w, "No autorizado", http.StatusUnauthorized)
+		return
 	}
 
 	image, err := db.GetImageByID(imageID)
 	if err != nil {
-		http.Error(w, "Imagen no encontrada: "+err.Error(), http.StatusNotFound)
+		http.Error(w, "Imagen no encontrada", http.StatusNotFound)
 		return
 	}
 
 	if image.UserName != userData.UserName {
-		http.Error(w, "No tienes permiso para ver esta imagen", http.StatusUnauthorized)
+		http.Error(w, "No tienes permiso para esta imagen", http.StatusUnauthorized)
 		return
 	}
 
-	imageURL := fmt.Sprintf("http://localhost:8080/images/%s/%s", userData.UserName, image.Name)
+	imageURL := fmt.Sprintf("%s:%s/%s/%s/%s", config.Cnf.BaseURL, config.Cnf.Port, "images", image.UserName, image.Name)
 
 	resp := models.ImageDetailResponse{
 		URL:    imageURL,

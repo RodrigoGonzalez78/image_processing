@@ -6,6 +6,34 @@ definitions:
         example: Descripción del error
         type: string
     type: object
+  models.Image:
+    properties:
+      created_at:
+        type: string
+      format:
+        description: Formato (jpeg, png, etc.)
+        type: string
+      height:
+        description: Alto de la imagen
+        type: integer
+      image_id:
+        type: integer
+      name:
+        type: string
+      path:
+        description: Ruta en el servidor
+        type: string
+      size:
+        description: Tamaño en bytes
+        type: integer
+      user:
+        $ref: '#/definitions/models.User'
+      user_name:
+        type: string
+      width:
+        description: Ancho de la imagen
+        type: integer
+    type: object
   models.ImageDetailResponse:
     properties:
       format:
@@ -27,10 +55,92 @@ definitions:
         example: 1920
         type: integer
     type: object
+  models.PaginatedImagesResponse:
+    properties:
+      images:
+        items:
+          $ref: '#/definitions/models.Image'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
   models.ResponseLogin:
     properties:
       token:
         type: string
+    type: object
+  models.TransformationRequest:
+    properties:
+      transformations:
+        description: Transformaciones a aplicar a la imagen
+        properties:
+          crop:
+            description: Recortar la imagen
+            properties:
+              height:
+                description: |-
+                  Alto del recorte
+                  example: 300
+                type: integer
+              width:
+                description: |-
+                  Ancho del recorte
+                  example: 400
+                type: integer
+              x:
+                description: |-
+                  Posición X del recorte
+                  example: 100
+                type: integer
+              "y":
+                description: |-
+                  Posición Y del recorte
+                  example: 50
+                type: integer
+            type: object
+          filters:
+            description: Filtros a aplicar
+            properties:
+              grayscale:
+                description: |-
+                  Convertir a escala de grises
+                  example: true
+                type: boolean
+              sepia:
+                description: |-
+                  Aplicar filtro sepia
+                  example: false
+                type: boolean
+            type: object
+          format:
+            description: |-
+              Formato de salida de la imagen (png, jpg, gif)
+              example: jpg
+            type: string
+          resize:
+            description: Redimensionar la imagen
+            properties:
+              height:
+                description: |-
+                  Alto en píxeles
+                  example: 600
+                type: integer
+              width:
+                description: |-
+                  Ancho en píxeles
+                  example: 800
+                type: integer
+            type: object
+          rotate:
+            description: |-
+              Rotar la imagen (en grados)
+              example: 90
+            type: number
+        type: object
     type: object
   models.UploadResponse:
     properties:
@@ -55,7 +165,7 @@ definitions:
         example: 204800
         type: integer
       url:
-        example: http://localhost:8080/images/rodrick/imagen123.jpg
+        example: http://localhost:8080/images/username/imagen123.jpg
         type: string
       width:
         example: 1920
@@ -106,6 +216,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Obtener información de una imagen
+      tags:
+      - images
+  /images/{id}/transform:
+    post:
+      description: Aplica transformaciones (resize, crop, rotación, filtros) a una
+        imagen previamente cargada por el usuario
+      parameters:
+      - description: ID de la imagen
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Parámetros de transformación
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.TransformationRequest'
+      produces:
+      - image/png
+      - image/jpeg
+      - image/gif
+      responses:
+        "200":
+          description: Imagen transformada
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Aplica transformaciones a una imagen
       tags:
       - images
   /images/{rest}:
@@ -195,7 +347,7 @@ paths:
       consumes:
       - multipart/form-data
       description: Permite a un usuario autenticado subir una imagen. Se guarda en
-        el servidor y se almacena la metadata.
+        MinIO y se almacena la metadata.
       parameters:
       - description: Imagen a subir (jpg, jpeg, png, gif)
         in: formData
@@ -224,6 +376,41 @@ paths:
       security:
       - BearerAuth: []
       summary: Sube una imagen
+      tags:
+      - images
+  /user-images:
+    get:
+      description: Devuelve las imágenes subidas por el usuario autenticado con soporte
+        de paginación.
+      parameters:
+      - default: 1
+        description: Número de página
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Cantidad por página
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedImagesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Lista imágenes del usuario autenticado
       tags:
       - images
 swagger: "2.0"

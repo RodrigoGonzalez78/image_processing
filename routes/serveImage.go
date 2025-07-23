@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"io"
 	"net/http"
-	"os"
-	"path/filepath"
+	"path"
+	"strings"
+
+	"github.com/RodrigoGonzalez78/storage"
 )
 
 // ServeImage godoc
@@ -20,17 +23,34 @@ import (
 // @Router       /images/{rest} [get]
 func ServeImage(w http.ResponseWriter, r *http.Request) {
 
-	filePath := filepath.Join("uploads", r.URL.Path[len("/images/"):])
+	objectPath := strings.TrimPrefix(r.URL.Path, "/images/")
+	objectPath = path.Clean(objectPath)
 
-	info, err := os.Stat(filePath)
-	if err != nil {
-		http.Error(w, "Archivo o directorio no encontrado", http.StatusNotFound)
-		return
-	}
-	if info.IsDir() {
+	if objectPath == "." || strings.Contains(objectPath, "..") {
 		http.Error(w, "Acceso prohibido", http.StatusForbidden)
 		return
 	}
 
-	http.ServeFile(w, r, filePath)
+	// Obtener objeto desde MinIO
+	reader, err := storage.MinioClientInstance.GetImage(r.Context(), objectPath)
+	if err != nil {
+		http.Error(w, "Archivo no encontrado en MinIO", http.StatusNotFound)
+		return
+	}
+	defer reader.Close()
+
+	// Estimar tipo MIME en base a la extensión
+	switch ext := strings.ToLower(path.Ext(objectPath)); ext {
+	case ".jpg", ".jpeg":
+		w.Header().Set("Content-Type", "image/jpeg")
+	case ".png":
+		w.Header().Set("Content-Type", "image/png")
+	case ".gif":
+		w.Header().Set("Content-Type", "image/gif")
+	default:
+		w.Header().Set("Content-Type", "application/octet-stream")
+	}
+
+	w.WriteHeader(http.StatusOK)
+	io.Copy(w, reader)
 }

@@ -1,27 +1,28 @@
 package routes
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 
+	"github.com/RodrigoGonzalez78/config"
 	"github.com/RodrigoGonzalez78/db"
 	"github.com/RodrigoGonzalez78/models"
+	"github.com/RodrigoGonzalez78/storage"
 	"github.com/google/uuid"
 )
 
 // Upload godoc
 // @Summary      Sube una imagen
-// @Description  Permite a un usuario autenticado subir una imagen. Se guarda en el servidor y se almacena la metadata.
+// @Description  Permite a un usuario autenticado subir una imagen. Se guarda en MinIO y se almacena la metadata.
 // @Tags         images
 // @Security     BearerAuth
 // @Accept       multipart/form-data
@@ -52,47 +53,38 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Archivo sin extensión válida", http.StatusBadRequest)
 		return
 	}
-	extension := extParts[len(extParts)-1]
 
+	extension := strings.ToLower(extParts[len(extParts)-1])
 	allowedExtensions := map[string]bool{"jpg": true, "jpeg": true, "png": true, "gif": true}
+
 	if !allowedExtensions[extension] {
 		http.Error(w, "Formato de archivo no permitido", http.StatusBadRequest)
 		return
 	}
 
-	directory := filepath.Join("uploads", userData.UserName)
-	err = os.MkdirAll(directory, os.ModePerm)
-	if err != nil {
-		http.Error(w, "Error al crear el directorio: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	// Generar nombre único
 	randomName := uuid.New().String() + "." + extension
-	filePath := filepath.Join(directory, randomName)
+	objectName := fmt.Sprintf("%s/%s", userData.UserName, randomName)
 
-	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
+	// Leemos la imagen en memoria para poder usarla 2 veces
+	var buf bytes.Buffer
+	size, err := io.Copy(&buf, file)
 	if err != nil {
-		http.Error(w, "Error al abrir el archivo: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer f.Close()
-
-	size, err := io.Copy(f, file)
-	if err != nil {
-		http.Error(w, "Error al copiar la imagen: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error al leer el archivo: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	imageFile, err := os.Open(filePath)
-	if err != nil {
-		http.Error(w, "Error al abrir la imagen para analizar: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer imageFile.Close()
-
-	img, format, err := image.DecodeConfig(imageFile)
+	// Obtener dimensiones
+	configImage, format, err := image.DecodeConfig(bytes.NewReader(buf.Bytes()))
 	if err != nil {
 		http.Error(w, "Error al obtener dimensiones de la imagen: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Subir a MinIO
+	err = storage.MinioClientInstance.UploadBytes(r.Context(), objectName, buf.Bytes(), "image/"+format)
+	if err != nil {
+		http.Error(w, "Error al subir imagen a MinIO: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -100,31 +92,30 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 	imageData := models.Image{
 		Name:     randomName,
 		UserName: userData.UserName,
-		Path:     filePath,
+		Path:     objectName,
 		Size:     size,
 		Format:   format,
-		Width:    img.Width,
-		Height:   img.Height,
+		Width:    configImage.Width,
+		Height:   configImage.Height,
 	}
 
 	err = db.CreateImage(imageData)
-
 	if err != nil {
 		http.Error(w, "Error al almacenar la imagen en la base de datos: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	imageURL := fmt.Sprintf("http://localhost:8080/images/%s/%s", userData.UserName, randomName)
+	url := fmt.Sprintf("%s:%s/%s/%s/%s", config.Cnf.BaseURL, config.Cnf.Port, "images", userData.UserName, randomName)
 
 	resp := models.UploadResponse{
 		Message: "Imagen subida exitosamente",
 		Image: models.UploadedImageDetail{
-			URL:    imageURL,
+			URL:    url,
 			Name:   randomName,
 			Size:   size,
 			Format: format,
-			Width:  img.Width,
-			Height: img.Height,
+			Width:  configImage.Width,
+			Height: configImage.Height,
 		},
 	}
 

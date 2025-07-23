@@ -2,18 +2,16 @@ package utils
 
 import (
 	"errors"
-	"fmt"
-	"os"
 	"strings"
 	"time"
 
+	"github.com/RodrigoGonzalez78/config"
 	"github.com/RodrigoGonzalez78/models"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 )
 
 func GenerateJWT(userName string) (string, error) {
-	secretKey := []byte(getSecretKey())
+	secretKey := []byte(config.Cnf.JWTSecret)
 
 	claims := models.Claim{
 		UserName: userName,
@@ -32,7 +30,7 @@ func GenerateJWT(userName string) (string, error) {
 }
 
 func ProcessToken(tokenStr string) (*models.Claim, bool, error) {
-	secretKey := []byte(getSecretKey())
+	secretKey := []byte(config.Cnf.JWTSecret)
 
 	if !strings.HasPrefix(tokenStr, "Bearer ") {
 		return nil, false, errors.New("formato de token inválido")
@@ -55,15 +53,4 @@ func ProcessToken(tokenStr string) (*models.Claim, bool, error) {
 	}
 
 	return &claims, true, nil
-}
-
-func getSecretKey() string {
-	if err := godotenv.Load(); err != nil {
-		fmt.Println("⚠️ No se pudo cargar el archivo .env, usando clave por defecto")
-	}
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		secret = "Twittor_clone"
-	}
-	return secret
 }
