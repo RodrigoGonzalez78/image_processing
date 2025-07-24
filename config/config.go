@@ -59,7 +59,7 @@ func LoadConfig() {
 	Cnf = &Config{
 		Port:           getEnv("PORT", "8080", false),
 		JWTSecret:      getEnv("JWT_SECRET", "", true), // JWT_SECRET debería ser obligatorio
-		BaseURL:        getEnv("BASE_URL", "http://localhost:8080", false),
+		BaseURL:        getEnv("BASE_URL", "http://localhost", false),
 		MinioEndpoint:  getEnv("MINIO_ENDPOINT", "localhost:9000", false),
 		MinioAccessKey: getEnv("MINIO_ACCESS_KEY", "minioadmin", false),
 		MinioSecretKey: getEnv("MINIO_SECRET_KEY", "minioadmin", false),

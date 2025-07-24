@@ -50,7 +50,7 @@ func main() {
 	r.HandleFunc("/upload", middlewares.CheckJwt(routes.Upload)).Methods("POST")
 
 	r.HandleFunc("/user-images", middlewares.CheckJwt(routes.AllUserImages)).Methods("GET")
-	r.HandleFunc("/image/{id}", middlewares.CheckJwt(routes.GetImage)).Methods("GET")
+	r.HandleFunc("/images/{id}", middlewares.CheckJwt(routes.GetImage)).Methods("GET")
 	r.HandleFunc("/images/{id}/transform", middlewares.CheckJwt(routes.TransformImage)).Methods("POST")
 
 	log.Println("Servidor iniciado en el puerto: " + config.Cnf.Port)

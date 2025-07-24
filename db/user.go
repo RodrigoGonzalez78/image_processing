@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/RodrigoGonzalez78/models"
-	"gorm.io/gorm"
 )
 
 func CreateUser(user models.User) error {
@@ -45,11 +44,6 @@ func GetUserByUserName(userName string) (*models.User, error) {
 	err := database.Model(&models.User{}).Where("user_name = ?", userName).First(&user).Error
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-
-			return nil, nil
-		}
-
 		return nil, err
 	}
 
