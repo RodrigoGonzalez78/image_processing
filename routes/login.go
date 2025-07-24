@@ -9,6 +9,16 @@ import (
 	"github.com/RodrigoGonzalez78/utils"
 )
 
+// Login godoc
+// @Summary      Inicia sesión
+// @Description  Autentica al usuario y devuelve un token JWT si las credenciales son correctas.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        credentials body models.User true "Credenciales de usuario"
+// @Success      201 {object} models.ResponseLogin
+// @Failure      400 {object} models.ErrorResponse
+// @Router       /login [post]
 func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "application/json")
 

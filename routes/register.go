@@ -9,6 +9,16 @@ import (
 	"github.com/RodrigoGonzalez78/utils"
 )
 
+// Register godoc
+// @Summary      Registra un nuevo usuario
+// @Description  Crea un nuevo usuario en la base de datos con nombre de usuario y contraseña.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        user  body models.User true "Datos del usuario a registrar"
+// @Success      201
+// @Failure      400 {object} models.ErrorResponse
+// @Router       /register [post]
 func Register(w http.ResponseWriter, r *http.Request) {
 
 	var t models.User
