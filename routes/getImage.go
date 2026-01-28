@@ -23,7 +23,7 @@ import (
 // @Failure      400 {object} models.ErrorResponse
 // @Failure      401 {object} models.ErrorResponse
 // @Failure      404 {object} models.ErrorResponse
-// @Router       /image/{id} [get]
+// @Router       /images/{id} [get]
 func GetImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	imageIDStr := vars["id"]

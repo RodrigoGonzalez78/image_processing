@@ -3,28 +3,40 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/RodrigoGonzalez78/config"
 	"github.com/RodrigoGonzalez78/db"
+	"github.com/RodrigoGonzalez78/docs"
 	"github.com/RodrigoGonzalez78/middlewares"
 	"github.com/RodrigoGonzalez78/routes"
 	"github.com/RodrigoGonzalez78/storage"
 	"github.com/gorilla/mux"
 
-	_ "github.com/RodrigoGonzalez78/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title           API de Procesamiento de Imágenes
 // @version         1.0
 // @description     Esta es una API para subir, transformar y consultar imágenes.
-// @host            localhost:8080
+// @termsOfService  http://swagger.io/terms/
+
 // @BasePath        /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Escribe "Bearer " seguido del token JWT obtenido en /login
 func main() {
 
 	db.StartDB()
 	db.MigrateModels()
 	config.LoadConfig()
+
+	// Configurar Swagger dinámicamente con la URL y puerto actual
+	baseURL := strings.TrimPrefix(config.Cnf.BaseURL, "http://")
+	baseURL = strings.TrimPrefix(baseURL, "https://")
+	docs.SwaggerInfo.Host = baseURL + ":" + config.Cnf.Port
 
 	err := storage.StartMinioClient(
 		config.Cnf.MinioEndpoint,

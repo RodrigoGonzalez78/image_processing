@@ -180,12 +180,18 @@ definitions:
     type: object
 host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: soporte@example.com
+    name: Soporte API
   description: Esta es una API para subir, transformar y consultar imágenes.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
   title: API de Procesamiento de Imágenes
   version: "1.0"
 paths:
-  /image/{id}:
+  /images/{id}:
     get:
       description: Devuelve la metadata y URL de una imagen del usuario autenticado
       parameters:
@@ -413,4 +419,10 @@ paths:
       summary: Lista imágenes del usuario autenticado
       tags:
       - images
+securityDefinitions:
+  BearerAuth:
+    description: Escribe "Bearer " seguido del token JWT obtenido en /login
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
