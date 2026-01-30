@@ -25,10 +25,10 @@ func getEnv(key, fallback string, required bool) string {
 	value := os.Getenv(key)
 	if value == "" {
 		if required {
-			log.Fatalf("❌ La variable de entorno %s es obligatoria pero no está definida", key)
+			log.Fatalf(" La variable de entorno %s es obligatoria pero no está definida", key)
 		}
 		if fallback != "" {
-			log.Printf("⚠️  La variable de entorno %s no está definida. Usando valor por defecto: %s", key, fallback)
+			log.Printf("  La variable de entorno %s no está definida. Usando valor por defecto: %s", key, fallback)
 		}
 		return fallback
 	}
@@ -43,7 +43,7 @@ func getEnvBool(key string, fallback bool) bool {
 
 	boolValue, err := strconv.ParseBool(value)
 	if err != nil {
-		log.Printf("⚠️  No se pudo parsear %s como boolean, usando valor por defecto: %t", key, fallback)
+		log.Printf("  No se pudo parsear %s como boolean, usando valor por defecto: %t", key, fallback)
 		return fallback
 	}
 
@@ -53,7 +53,7 @@ func getEnvBool(key string, fallback bool) bool {
 func LoadConfig() {
 	// Intentar cargar .env solo en desarrollo
 	if err := godotenv.Load(); err != nil {
-		log.Println("📄 Archivo .env no encontrado. Usando variables de entorno del sistema.")
+		log.Println(" Archivo .env no encontrado. Usando variables de entorno del sistema.")
 	}
 
 	Cnf = &Config{
@@ -69,12 +69,12 @@ func LoadConfig() {
 
 	// Validación adicional
 	if Cnf.JWTSecret == "jwt_secret_key" {
-		log.Println("⚠️  ADVERTENCIA: Estás usando el JWT_SECRET por defecto. Cambia esto en producción.")
+		log.Println("  ADVERTENCIA: Estás usando el JWT_SECRET por defecto. Cambia esto en producción.")
 	}
 
-	log.Printf("✅ Configuración cargada exitosamente")
-	log.Printf("🔧 Puerto: %s", Cnf.Port)
-	log.Printf("🔧 Minio Endpoint: %s", Cnf.MinioEndpoint)
-	log.Printf("🔧 Minio Bucket: %s", Cnf.MinioBucket)
-	log.Printf("🔧 Minio SSL: %t", Cnf.MinioUseSSL)
+	log.Printf(" Configuración cargada exitosamente")
+	log.Printf(" Puerto: %s", Cnf.Port)
+	log.Printf(" Minio Endpoint: %s", Cnf.MinioEndpoint)
+	log.Printf(" Minio Bucket: %s", Cnf.MinioBucket)
+	log.Printf(" Minio SSL: %t", Cnf.MinioUseSSL)
 }

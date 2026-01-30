@@ -1,40 +1,12 @@
 basePath: /
 definitions:
-  models.ErrorResponse:
+  dto.ErrorResponse:
     properties:
       message:
         example: Descripción del error
         type: string
     type: object
-  models.Image:
-    properties:
-      created_at:
-        type: string
-      format:
-        description: Formato (jpeg, png, etc.)
-        type: string
-      height:
-        description: Alto de la imagen
-        type: integer
-      image_id:
-        type: integer
-      name:
-        type: string
-      path:
-        description: Ruta en el servidor
-        type: string
-      size:
-        description: Tamaño en bytes
-        type: integer
-      user:
-        $ref: '#/definitions/models.User'
-      user_name:
-        type: string
-      width:
-        description: Ancho de la imagen
-        type: integer
-    type: object
-  models.ImageDetailResponse:
+  dto.ImageDetailResponse:
     properties:
       format:
         example: jpeg
@@ -55,11 +27,40 @@ definitions:
         example: 1920
         type: integer
     type: object
-  models.PaginatedImagesResponse:
+  dto.ImageItem:
+    properties:
+      format:
+        type: string
+      height:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      size:
+        type: integer
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
+  dto.LoginRequest:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    type: object
+  dto.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.PaginatedImagesResponse:
     properties:
       images:
         items:
-          $ref: '#/definitions/models.Image'
+          $ref: '#/definitions/dto.ImageItem'
         type: array
       limit:
         type: integer
@@ -68,89 +69,57 @@ definitions:
       total:
         type: integer
     type: object
-  models.ResponseLogin:
+  dto.RegisterRequest:
     properties:
-      token:
+      password:
+        type: string
+      user_name:
         type: string
     type: object
-  models.TransformationRequest:
+  dto.TransformationRequest:
     properties:
       transformations:
-        description: Transformaciones a aplicar a la imagen
         properties:
           crop:
-            description: Recortar la imagen
             properties:
               height:
-                description: |-
-                  Alto del recorte
-                  example: 300
                 type: integer
               width:
-                description: |-
-                  Ancho del recorte
-                  example: 400
                 type: integer
               x:
-                description: |-
-                  Posición X del recorte
-                  example: 100
                 type: integer
               "y":
-                description: |-
-                  Posición Y del recorte
-                  example: 50
                 type: integer
             type: object
           filters:
-            description: Filtros a aplicar
             properties:
               grayscale:
-                description: |-
-                  Convertir a escala de grises
-                  example: true
                 type: boolean
               sepia:
-                description: |-
-                  Aplicar filtro sepia
-                  example: false
                 type: boolean
             type: object
           format:
-            description: |-
-              Formato de salida de la imagen (png, jpg, gif)
-              example: jpg
             type: string
           resize:
-            description: Redimensionar la imagen
             properties:
               height:
-                description: |-
-                  Alto en píxeles
-                  example: 600
                 type: integer
               width:
-                description: |-
-                  Ancho en píxeles
-                  example: 800
                 type: integer
             type: object
           rotate:
-            description: |-
-              Rotar la imagen (en grados)
-              example: 90
             type: number
         type: object
     type: object
-  models.UploadResponse:
+  dto.UploadResponse:
     properties:
       image:
-        $ref: '#/definitions/models.UploadedImageDetail'
+        $ref: '#/definitions/dto.UploadedImageDetail'
       message:
         example: Imagen subida exitosamente
         type: string
     type: object
-  models.UploadedImageDetail:
+  dto.UploadedImageDetail:
     properties:
       format:
         example: jpeg
@@ -171,22 +140,9 @@ definitions:
         example: 1920
         type: integer
     type: object
-  models.User:
-    properties:
-      password:
-        type: string
-      user_name:
-        type: string
-    type: object
-host: localhost:8080
 info:
-  contact:
-    email: soporte@example.com
-    name: Soporte API
+  contact: {}
   description: Esta es una API para subir, transformar y consultar imágenes.
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
   title: API de Procesamiento de Imágenes
   version: "1.0"
@@ -206,19 +162,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ImageDetailResponse'
+            $ref: '#/definitions/dto.ImageDetailResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Obtener información de una imagen
@@ -239,7 +195,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/models.TransformationRequest'
+          $ref: '#/definitions/dto.TransformationRequest'
       produces:
       - image/png
       - image/jpeg
@@ -252,15 +208,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Aplica transformaciones a una imagen
@@ -308,18 +264,18 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.ResponseLogin'
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Inicia sesión
       tags:
       - auth
@@ -335,7 +291,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -344,7 +300,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Registra un nuevo usuario
       tags:
       - auth
@@ -366,19 +322,19 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.UploadResponse'
+            $ref: '#/definitions/dto.UploadResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Sube una imagen
@@ -405,15 +361,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.PaginatedImagesResponse'
+            $ref: '#/definitions/dto.PaginatedImagesResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Lista imágenes del usuario autenticado

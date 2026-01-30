@@ -9,7 +9,7 @@ COPY go.sum ./
 RUN go mod download
 
 COPY . ./
-RUN CGO_ENABLED=1 GOOS=linux go build -a -ldflags '-linkmode external -extldflags "-static"' -o app .
+RUN CGO_ENABLED=1 GOOS=linux go build -a -ldflags '-linkmode external -extldflags "-static"' -o app ./cmd/server
 
 # Etapa 2: imagen final
 FROM debian:bookworm-slim

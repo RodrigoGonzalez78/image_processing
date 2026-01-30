@@ -10,14 +10,7 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "Soporte API",
-            "email": "soporte@example.com"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -51,25 +44,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ImageDetailResponse"
+                            "$ref": "#/definitions/dto.ImageDetailResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -106,7 +99,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.TransformationRequest"
+                            "$ref": "#/definitions/dto.TransformationRequest"
                         }
                     }
                 ],
@@ -120,19 +113,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -201,7 +194,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -209,13 +202,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.ResponseLogin"
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -241,7 +234,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/dto.RegisterRequest"
                         }
                     }
                 ],
@@ -252,7 +245,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -289,25 +282,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.UploadResponse"
+                            "$ref": "#/definitions/dto.UploadResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -348,19 +341,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PaginatedImagesResponse"
+                            "$ref": "#/definitions/dto.PaginatedImagesResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     }
                 }
@@ -368,7 +361,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.ErrorResponse": {
+        "dto.ErrorResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -377,47 +370,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Image": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "format": {
-                    "description": "Formato (jpeg, png, etc.)",
-                    "type": "string"
-                },
-                "height": {
-                    "description": "Alto de la imagen",
-                    "type": "integer"
-                },
-                "image_id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "path": {
-                    "description": "Ruta en el servidor",
-                    "type": "string"
-                },
-                "size": {
-                    "description": "Tamaño en bytes",
-                    "type": "integer"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "user_name": {
-                    "type": "string"
-                },
-                "width": {
-                    "description": "Ancho de la imagen",
-                    "type": "integer"
-                }
-            }
-        },
-        "models.ImageDetailResponse": {
+        "dto.ImageDetailResponse": {
             "type": "object",
             "properties": {
                 "format": {
@@ -446,13 +399,58 @@ const docTemplate = `{
                 }
             }
         },
-        "models.PaginatedImagesResponse": {
+        "dto.ImageItem": {
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PaginatedImagesResponse": {
             "type": "object",
             "properties": {
                 "images": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Image"
+                        "$ref": "#/definitions/dto.ImageItem"
                     }
                 },
                 "limit": {
@@ -466,88 +464,77 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ResponseLogin": {
+        "dto.RegisterRequest": {
             "type": "object",
             "properties": {
-                "token": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }
         },
-        "models.TransformationRequest": {
+        "dto.TransformationRequest": {
             "type": "object",
             "properties": {
                 "transformations": {
-                    "description": "Transformaciones a aplicar a la imagen",
                     "type": "object",
                     "properties": {
                         "crop": {
-                            "description": "Recortar la imagen",
                             "type": "object",
                             "properties": {
                                 "height": {
-                                    "description": "Alto del recorte\nexample: 300",
                                     "type": "integer"
                                 },
                                 "width": {
-                                    "description": "Ancho del recorte\nexample: 400",
                                     "type": "integer"
                                 },
                                 "x": {
-                                    "description": "Posición X del recorte\nexample: 100",
                                     "type": "integer"
                                 },
                                 "y": {
-                                    "description": "Posición Y del recorte\nexample: 50",
                                     "type": "integer"
                                 }
                             }
                         },
                         "filters": {
-                            "description": "Filtros a aplicar",
                             "type": "object",
                             "properties": {
                                 "grayscale": {
-                                    "description": "Convertir a escala de grises\nexample: true",
                                     "type": "boolean"
                                 },
                                 "sepia": {
-                                    "description": "Aplicar filtro sepia\nexample: false",
                                     "type": "boolean"
                                 }
                             }
                         },
                         "format": {
-                            "description": "Formato de salida de la imagen (png, jpg, gif)\nexample: jpg",
                             "type": "string"
                         },
                         "resize": {
-                            "description": "Redimensionar la imagen",
                             "type": "object",
                             "properties": {
                                 "height": {
-                                    "description": "Alto en píxeles\nexample: 600",
                                     "type": "integer"
                                 },
                                 "width": {
-                                    "description": "Ancho en píxeles\nexample: 800",
                                     "type": "integer"
                                 }
                             }
                         },
                         "rotate": {
-                            "description": "Rotar la imagen (en grados)\nexample: 90",
                             "type": "number"
                         }
                     }
                 }
             }
         },
-        "models.UploadResponse": {
+        "dto.UploadResponse": {
             "type": "object",
             "properties": {
                 "image": {
-                    "$ref": "#/definitions/models.UploadedImageDetail"
+                    "$ref": "#/definitions/dto.UploadedImageDetail"
                 },
                 "message": {
                     "type": "string",
@@ -555,7 +542,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UploadedImageDetail": {
+        "dto.UploadedImageDetail": {
             "type": "object",
             "properties": {
                 "format": {
@@ -583,17 +570,6 @@ const docTemplate = `{
                     "example": 1920
                 }
             }
-        },
-        "models.User": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "user_name": {
-                    "type": "string"
-                }
-            }
         }
     },
     "securityDefinitions": {
@@ -609,7 +585,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "API de Procesamiento de Imágenes",
